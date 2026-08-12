@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
 import os
+from pathlib import Path
 import uvicorn
 
 from rag.types import DocumentItem, Chunk, SearchResult, ChatMessage, RAGConfig, QueryRequest, PipelineTrace
@@ -155,8 +156,10 @@ def chat_rag(req: QueryRequest):
     }
 
 # Mount static files if build directory exists
-if os.path.exists("dist"):
-    app.mount("/", StaticFiles(directory="dist", html=True), name="static")
+DIST_DIR = Path("dist")
+if DIST_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(DIST_DIR), html=True), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)
